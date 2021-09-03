@@ -3,9 +3,9 @@ import sys
 import pandas as pd
 pd.options.mode.chained_assignment = None
 
-# filename = (sys.argv[1])
-# filename = filename.replace('\\', '/').replace('"', '')
-filename = 'xxx.txt'
+filename = (sys.argv[1])
+filename = filename.replace('\\', '/').replace('"', '')
+# filename = 'xxx.txt'
 tags = pd.read_csv(filename, delimiter="\t")
 sort_list = []
 sort_add = ''
