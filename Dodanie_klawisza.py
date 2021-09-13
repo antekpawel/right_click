@@ -20,8 +20,8 @@ reg.SetValue(key, '', reg.REG_SZ, '&' + option_name)  # Change 'Organise folder'
 
 # create inner key
 key1 = reg.CreateKey(key, r"command")
-reg.SetValue(key1, '', reg.REG_SZ, python_exe + f' "{cwd}\\int.py"' + '"%1"') # change 'file_organiser.py' to the name of your script
+reg.SetValue(key1, '', reg.REG_SZ, python_exe + f' "{cwd}\\Numeracja.py"' + '"%1"') # change 'file_organiser.py' to the name of your script
 # reg.SetValue(key1, '', reg.REG_SZ, hidden_terminal + f' "{cwd}\\file_organiser.py"')  # use to to hide terminal
 # Komputer\HKEY_CLASSES_ROOT\SystemFileAssociations\.txt\shell\Numeracja\command
-# C:\Users\Antek\PycharmProjects\pythonProject\venv\Scripts\python.exe "C:\Users\Antek\PycharmProjects\pythonProject\int.py"
+# C:\Users\Antek\PycharmProjects\pythonProject\venv\Scripts\python.exe "C:\Users\Antek\PycharmProjects\pythonProject\Numeracja.py"
 # Komputer\HKEY_CLASSES_ROOT\Directory\Background\shell\Int\command

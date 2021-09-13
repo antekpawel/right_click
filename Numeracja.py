@@ -103,6 +103,7 @@ try:
         ideal_gas_data = pd.read_excel(filename_old + ".xlsx", index_col=0)
 except IOError:
     print('Nie udało się otworzyc pliku!')
+    input("Nacisnij Enter by wyjść.")
 
 for index1, row1 in sorted_tags.iterrows():
     for index2, row2 in ideal_gas_data.iterrows():
