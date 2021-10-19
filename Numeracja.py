@@ -5,7 +5,6 @@ from pathlib import Path
 
 pd.options.mode.chained_assignment = None
 
-
 def print_tag_no(column, tag_name):
     no = sum(sorted_tags[column] == tag_name)
     print('Liczba ' + tag_name + f': {no}')
