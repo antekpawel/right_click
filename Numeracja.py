@@ -95,6 +95,10 @@ print_tag_no('BLOCKNAME', 'Tag Automat')
 tag_con_mesurement_no = (sum(sorted_tags['BLOCKNAME'] == 'Tag Automat')) - tag_tri_mesurement_no
 print(f'Liczba pomiarów nieciągłych: {tag_tri_mesurement_no}')
 print(f'Liczba pomiarów    ciągłych: {tag_con_mesurement_no}')
+print("UWAGA!!! Liczba pomiarów nieciągłych obliczana jest na podstawie ilości czujników o oznaczeniach: \n"
+      "FIT, HLT, MLT, LLT, ICO, ISO. Liczba pomiarów ciągłych jest obliczana z różnicy wszystkich czujników \n"
+      "i nieciągłych W przypadku, gdy dojdą czujniki nieciągłe o innych oznaczeniach należy je dopisać\n"
+      "w kodzie programu.")
 
 filename_old = input("Podaj nazwe starego pliku bez rozszerzenia")
 try:
