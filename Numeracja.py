@@ -1,3 +1,4 @@
+import math
 import re
 import sys
 import pandas as pd
@@ -5,18 +6,24 @@ from pathlib import Path
 
 pd.options.mode.chained_assignment = None
 
+
 def print_tag_no(column, tag_name):
     no = sum(sorted_tags[column] == tag_name)
     print('Liczba ' + tag_name + f': {no}')
 
 
-filename = (sys.argv[1])
-filename = filename.replace('\\', '/').replace('"', '')
-# filename = 'xxx.txt'
+# Wczytanie pliku
+try:
+    filename = (sys.argv[1])
+    filename = filename.replace('\\', '/').replace('"', '')
+except IndexError:
+    filename = 'xxx.txt'
+
 tags = pd.read_csv(filename, delimiter="\t")
 sort_list = []
 sort_add = ''
 
+# Wczytanie kolejności sortowania
 while True:
     val = input("Wpisz kolejność numerowania.\n"
                 "Wpisz kolejno kilka typów, aby uzyskac sortowanie piętrowe\n"
@@ -48,34 +55,56 @@ while True:
     else:
         print('Nieprawidłowa dana wejściowa')
 
+# Usunięcie niepotrzebnych znaków
 sorted_tags['TYPE'] = sorted_tags['TYPE'].str.replace('\d+', '', regex=True)
+sorted_tags['TYPE'] = sorted_tags['TYPE'].str.replace('-', '', regex=True)
+
+# Lista pomiarów nieciągłych
 tag_tri_mesurement_no = (sum(sorted_tags['TYPE'] == 'FIT') +
                          sum(sorted_tags['TYPE'] == 'HLT') +
                          sum(sorted_tags['TYPE'] == 'LLT') +
                          sum(sorted_tags['TYPE'] == 'MLT') +
                          sum(sorted_tags['TYPE'] == 'ICO') +
                          sum(sorted_tags['TYPE'] == 'ISO'))
-print(sorted_tags['TYPE'])
-dzban = sorted_tags[sort_add][0]
+
+# Zmienne do sortowania
+try:
+    sorted_tags['merged_text'] = sorted_tags[sort_list[2]] + sorted_tags[sort_list[1]] + sorted_tags[sort_list[0]]
+except IndexError:
+    try:
+        sorted_tags['merged_text'] = sorted_tags[sort_list[1]] + sorted_tags[sort_list[0]]
+    except IndexError:
+        sorted_tags['merged_text'] = sorted_tags[sort_list[0]]
+
+dzban = sorted_tags['merged_text'][0]
 iterator = 1
 sorted_tags['NUMBER'] = 0
 sorted_tags['NUMBER'] = sorted_tags['NUMBER'].astype('int32')
 
+# Sortowanie
 for index, row in sorted_tags.iterrows():
-    if row[sort_add] == dzban:
+    if row['merged_text'] == dzban:
         sorted_tags['NUMBER'][index] = iterator
         iterator = iterator + 1
     else:
         iterator = 1
-        dzban = row[sort_add]
+        dzban = row['merged_text']
         sorted_tags['NUMBER'][index] = iterator
         iterator = iterator + 1
+max_iter = max(sorted_tags['NUMBER'])
 sorted_tags['NUMBER'] = sorted_tags['NUMBER'].astype('str')
 
+number_of_numbers = int(math.log10(max_iter))+1
 for index, row in sorted_tags.iterrows():
-    sorted_tags['TYPE'][index] = sorted_tags['TYPE'][index] + (3 - len(sorted_tags['NUMBER'][index])) * '0' + \
+    sorted_tags['TYPE'][index] = sorted_tags['TYPE'][index] + \
+                                 (int(number_of_numbers) - len(sorted_tags['NUMBER'][index])) * '0' + \
                                  sorted_tags['NUMBER'][index]
 sorted_tags = sorted_tags.drop(columns=['NUMBER'])
+sorted_tags = sorted_tags.drop(columns=['merged_text'])
+
+print('\nKilka końcowych wartośći do sprawdzenia:')
+print(sorted_tags.tail())
+print('\n')
 
 filename_name = Path(filename).stem
 sorted_tags.to_csv('ponumerowane_' + filename_name + '.txt', header=True, index=None, sep='\t', mode='w')
@@ -98,26 +127,33 @@ print(f'Liczba pomiarów    ciągłych: {tag_con_mesurement_no}')
 print("UWAGA!!! Liczba pomiarów nieciągłych obliczana jest na podstawie ilości czujników o oznaczeniach: \n"
       "FIT, HLT, MLT, LLT, ICO, ISO. Liczba pomiarów ciągłych jest obliczana z różnicy wszystkich czujników \n"
       "i nieciągłych W przypadku, gdy dojdą czujniki nieciągłe o innych oznaczeniach należy je dopisać\n"
-      "w kodzie programu.")
+      "w kodzie programu. \n ")
 
-filename_old = input("Podaj nazwe starego pliku bez rozszerzenia")
+filename_old = input("Podaj nazwe starego pliku bez rozszerzenia lub zatwierdź przyciskiem enter: ")
+
 try:
     with open(filename_old + '.xlsx', encoding='utf-8', errors='ignore') as f:
         ideal_gas_data = pd.read_excel(filename_old + ".xlsx", index_col=0)
-except IOError:
-    print('Nie udało się otworzyc pliku!')
+
+    for index1, row1 in sorted_tags.iterrows():
+        for index2, row2 in ideal_gas_data.iterrows():
+            if sorted_tags['HANDLE'][index1] == ideal_gas_data['HANDLE'][index2]:
+                sorted_tags['PN'][index1] = ideal_gas_data['PN'][index2]
+                sorted_tags['Rozmiar przyłącza'][index1] = ideal_gas_data['Rozmiar przyłącza'][index2]
+                sorted_tags['Rodzaj przyłącza'][index1] = ideal_gas_data['Rodzaj przyłącza'][index2]
+                sorted_tags['Materiał'][index1] = ideal_gas_data['Materiał'][index2]
+                sorted_tags['Uszczelnienie'][index1] = ideal_gas_data['Uszczelnienie'][index2]
+                sorted_tags['Uwagi'][index1] = ideal_gas_data['Uwagi'][index2]
+
+    sorted_tags.to_excel('ponumerowane_' + filename_name + '_nowe.xlsx')
+
     input("Nacisnij Enter by wyjść.")
-
-for index1, row1 in sorted_tags.iterrows():
-    for index2, row2 in ideal_gas_data.iterrows():
-        if sorted_tags['HANDLE'][index1] == ideal_gas_data['HANDLE'][index2]:
-            sorted_tags['PN'][index1] = ideal_gas_data['PN'][index2]
-            sorted_tags['Rozmiar przyłącza'][index1] = ideal_gas_data['Rozmiar przyłącza'][index2]
-            sorted_tags['Rodzaj przyłącza'][index1] = ideal_gas_data['Rodzaj przyłącza'][index2]
-            sorted_tags['Materiał'][index1] = ideal_gas_data['Materiał'][index2]
-            sorted_tags['Uszczelnienie'][index1] = ideal_gas_data['Uszczelnienie'][index2]
-            sorted_tags['Uwagi'][index1] = ideal_gas_data['Uwagi'][index2]
-
-sorted_tags.to_excel('ponumerowane_' + filename_name + '_nowe.xlsx')
+except IOError:
+    if filename_old != "":
+        print('Nie udało się otworzyc pliku!')
+    else:
+        print('A chuj Ci w dupe stary, ja tu funkcję tworzę, a Ty nie korzystasz!')
 
 input("Nacisnij Enter by wyjść.")
+
+
