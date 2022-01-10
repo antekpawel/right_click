@@ -140,26 +140,23 @@ filename_old = input("Podaj nazwe starego pliku bez rozszerzenia lub zatwierdź 
 try:
     with open(filename_old + '.xlsx', encoding='utf-8', errors='ignore') as f:
         ideal_gas_data = pd.read_excel(filename_old + ".xlsx", index_col=0)
-
-    for index1, row1 in sorted_tags.iterrows():
-        for index2, row2 in ideal_gas_data.iterrows():
-            if sorted_tags['HANDLE'][index1] == ideal_gas_data['HANDLE'][index2]:
-                sorted_tags['PN'][index1] = ideal_gas_data['PN'][index2]
-                sorted_tags['Rozmiar przyłącza'][index1] = ideal_gas_data['Rozmiar przyłącza'][index2]
-                sorted_tags['Rodzaj przyłącza'][index1] = ideal_gas_data['Rodzaj przyłącza'][index2]
-                sorted_tags['Materiał'][index1] = ideal_gas_data['Materiał'][index2]
-                sorted_tags['Uszczelnienie'][index1] = ideal_gas_data['Uszczelnienie'][index2]
-                sorted_tags['Uwagi'][index1] = ideal_gas_data['Uwagi'][index2]
-
-    sorted_tags.to_excel('ponumerowane_' + filename_name + '_nowe.xlsx')
-
-    input("Nacisnij Enter by wyjść.")
 except IOError:
     if filename_old != "":
         print('Nie udało się otworzyc pliku!')
     else:
         print('A chuj Ci w dupe stary, ja tu funkcję tworzę, a Ty nie korzystasz!')
+    input("Nacisnij Enter by wyjść.")
+
+for index1, row1 in sorted_tags.iterrows():
+    for index2, row2 in ideal_gas_data.iterrows():
+        if sorted_tags['HANDLE'][index1] == ideal_gas_data['HANDLE'][index2]:
+            sorted_tags['PN'][index1] = ideal_gas_data['PN'][index2]
+            sorted_tags['Rozmiar przyłącza'][index1] = ideal_gas_data['Rozmiar przyłącza'][index2]
+            sorted_tags['Rodzaj przyłącza'][index1] = ideal_gas_data['Rodzaj przyłącza'][index2]
+            sorted_tags['Materiał'][index1] = ideal_gas_data['Materiał'][index2]
+            sorted_tags['Uszczelnienie'][index1] = ideal_gas_data['Uszczelnienie'][index2]
+            sorted_tags['Uwagi'][index1] = ideal_gas_data['Uwagi'][index2]
+
+sorted_tags.to_excel('ponumerowane_' + filename_name + '_nowe.xlsx')
 
 input("Nacisnij Enter by wyjść.")
-
-
