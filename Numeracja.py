@@ -11,6 +11,17 @@ def print_tag_no(column, tag_name):
     no = sum(sorted_tags[column] == tag_name)
     print('Liczba ' + tag_name + f': {no}')
 
+def print_help():
+    return print(
+        '\nPodaj numer lub nazwę kolumny, po której chcesz posortować dokument.\n'
+        'Podanie kilku adresów kolumn w jednym ciągu spowoduje\n'
+        'sortowanie po nich kolejno zgodnie z podaną kolejnością.\n'
+        'Podanie nieprawidłowych danych \n'
+        'wywoła wyświetlenie się komunikatu i ponowne zapytanie.\n'
+        '\nProgram służy do automatycznego i bezbłędnego ponumerowania pliku z atrybutami\n'
+        'z programu GStarCAD.\n'
+    )
+
 
 # Wczytanie pliku
 try:
@@ -34,26 +45,25 @@ while True:
         .replace('Medium', '3').replace('MEDIUM', '3').replace('medium', '3')
 
     if val.upper() == 'H' or val.upper() == 'HELP':
-        print('\nPodaj numer lub nazwę kolumny, po której chcesz posortować dokument.\n'
-              'Podanie kilku adresów kolumn w jednym ciągu spowoduje\n'
-              'sortowanie po nich kolejno zgodnie z podaną kolejnością.\n'
-              'Podanie nieprawidłowych danych \n'
-              'wywoła wyświetlenie się komunikatu i ponowne zapytanie.\n'
-              '\nProgram służy do automatycznego i bezbłędnego ponumerowania pliku z atrybutami\n'
-              'z programu GStarCAD.\n')
-    elif 4 > len(val) and re.search(re.compile('^[123]+$'), val):
-        for c in val:
-            if c == '1':
-                sort_add = 'TYPE'
-            elif c == '2':
-                sort_add = 'AREA'
-            elif c == '3':
-                sort_add = 'MEDIUM'
-            sort_list.append(sort_add)
-        sorted_tags = tags.sort_values(sort_list, ignore_index=True)
-        break
-    else:
+        print_help()
+        continue
+
+    if len(val) > 4 or not re.search(re.compile('^[123]+$'), val):
         print('Nieprawidłowa dana wejściowa')
+        print_help()
+        continue
+
+    for c in val:
+        if c == '1':
+            sort_add = 'TYPE'
+        elif c == '2':
+            sort_add = 'AREA'
+        elif c == '3':
+            sort_add = 'MEDIUM'
+        sort_list.append(sort_add)
+    sorted_tags = tags.sort_values(sort_list, ignore_index=True)
+    break
+
 
 # Usunięcie niepotrzebnych znaków
 sorted_tags['TYPE'] = sorted_tags['TYPE'].str.replace('\d+', '', regex=True)
