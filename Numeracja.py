@@ -78,13 +78,9 @@ tag_tri_mesurement_no = (sum(sorted_tags['TYPE'] == 'FIT') +
                          sum(sorted_tags['TYPE'] == 'ISO'))
 
 # Zmienne do sortowania
-try:
-    sorted_tags['merged_text'] = sorted_tags[sort_list[2]] + sorted_tags[sort_list[1]] + sorted_tags[sort_list[0]]
-except IndexError:
-    try:
-        sorted_tags['merged_text'] = sorted_tags[sort_list[1]] + sorted_tags[sort_list[0]]
-    except IndexError:
-        sorted_tags['merged_text'] = sorted_tags[sort_list[0]]
+sorted_tags["merged_text"] = ""
+for tag in reversed(sort_list):
+    sorted_tags["merged_text"] += sorted_tags[tag]
 
 dzban = sorted_tags['merged_text'][0]
 iterator = 1
