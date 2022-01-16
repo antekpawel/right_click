@@ -11,6 +11,17 @@ def print_tag_no(column, tag_name):
     no = sum(sorted_tags[column] == tag_name)
     print('Liczba ' + tag_name + f': {no}')
 
+def print_help():
+    return print(
+        '\nPodaj numer lub nazwę kolumny, po której chcesz posortować dokument.\n'
+        'Podanie kilku adresów kolumn w jednym ciągu spowoduje\n'
+        'sortowanie po nich kolejno zgodnie z podaną kolejnością.\n'
+        'Podanie nieprawidłowych danych \n'
+        'wywoła wyświetlenie się komunikatu i ponowne zapytanie.\n'
+        '\nProgram służy do automatycznego i bezbłędnego ponumerowania pliku z atrybutami\n'
+        'z programu GStarCAD.\n'
+    )
+
 
 # Wczytanie pliku
 try:
@@ -34,26 +45,25 @@ while True:
         .replace('Medium', '3').replace('MEDIUM', '3').replace('medium', '3')
 
     if val.upper() == 'H' or val.upper() == 'HELP':
-        print('\nPodaj numer lub nazwę kolumny, po której chcesz posortować dokument.\n'
-              'Podanie kilku adresów kolumn w jednym ciągu spowoduje\n'
-              'sortowanie po nich kolejno zgodnie z podaną kolejnością.\n'
-              'Podanie nieprawidłowych danych \n'
-              'wywoła wyświetlenie się komunikatu i ponowne zapytanie.\n'
-              '\nProgram służy do automatycznego i bezbłędnego ponumerowania pliku z atrybutami\n'
-              'z programu GStarCAD.\n')
-    elif 4 > len(val) and re.search(re.compile('^[123]+$'), val):
-        for c in val:
-            if c == '1':
-                sort_add = 'TYPE'
-            elif c == '2':
-                sort_add = 'AREA'
-            elif c == '3':
-                sort_add = 'MEDIUM'
-            sort_list.append(sort_add)
-        sorted_tags = tags.sort_values(sort_list, ignore_index=True)
-        break
-    else:
+        print_help()
+        continue
+
+    if len(val) > 4 or not re.search(re.compile('^[123]+$'), val):
         print('Nieprawidłowa dana wejściowa')
+        print_help()
+        continue
+
+    for c in val:
+        if c == '1':
+            sort_add = 'TYPE'
+        elif c == '2':
+            sort_add = 'AREA'
+        elif c == '3':
+            sort_add = 'MEDIUM'
+        sort_list.append(sort_add)
+    sorted_tags = tags.sort_values(sort_list, ignore_index=True)
+    break
+
 
 # Usunięcie niepotrzebnych znaków
 sorted_tags['TYPE'] = sorted_tags['TYPE'].str.replace('\d+', '', regex=True)
@@ -68,13 +78,9 @@ tag_tri_mesurement_no = (sum(sorted_tags['TYPE'] == 'FIT') +
                          sum(sorted_tags['TYPE'] == 'ISO'))
 
 # Zmienne do sortowania
-try:
-    sorted_tags['merged_text'] = sorted_tags[sort_list[2]] + sorted_tags[sort_list[1]] + sorted_tags[sort_list[0]]
-except IndexError:
-    try:
-        sorted_tags['merged_text'] = sorted_tags[sort_list[1]] + sorted_tags[sort_list[0]]
-    except IndexError:
-        sorted_tags['merged_text'] = sorted_tags[sort_list[0]]
+sorted_tags["merged_text"] = ""
+for tag in reversed(sort_list):
+    sorted_tags["merged_text"] += sorted_tags[tag]
 
 dzban = sorted_tags['merged_text'][0]
 iterator = 1
@@ -134,26 +140,23 @@ filename_old = input("Podaj nazwe starego pliku bez rozszerzenia lub zatwierdź 
 try:
     with open(filename_old + '.xlsx', encoding='utf-8', errors='ignore') as f:
         ideal_gas_data = pd.read_excel(filename_old + ".xlsx", index_col=0)
-
-    for index1, row1 in sorted_tags.iterrows():
-        for index2, row2 in ideal_gas_data.iterrows():
-            if sorted_tags['HANDLE'][index1] == ideal_gas_data['HANDLE'][index2]:
-                sorted_tags['PN'][index1] = ideal_gas_data['PN'][index2]
-                sorted_tags['Rozmiar przyłącza'][index1] = ideal_gas_data['Rozmiar przyłącza'][index2]
-                sorted_tags['Rodzaj przyłącza'][index1] = ideal_gas_data['Rodzaj przyłącza'][index2]
-                sorted_tags['Materiał'][index1] = ideal_gas_data['Materiał'][index2]
-                sorted_tags['Uszczelnienie'][index1] = ideal_gas_data['Uszczelnienie'][index2]
-                sorted_tags['Uwagi'][index1] = ideal_gas_data['Uwagi'][index2]
-
-    sorted_tags.to_excel('ponumerowane_' + filename_name + '_nowe.xlsx')
-
-    input("Nacisnij Enter by wyjść.")
 except IOError:
     if filename_old != "":
         print('Nie udało się otworzyc pliku!')
     else:
         print('A chuj Ci w dupe stary, ja tu funkcję tworzę, a Ty nie korzystasz!')
+    input("Nacisnij Enter by wyjść.")
+
+for index1, row1 in sorted_tags.iterrows():
+    for index2, row2 in ideal_gas_data.iterrows():
+        if sorted_tags['HANDLE'][index1] == ideal_gas_data['HANDLE'][index2]:
+            sorted_tags['PN'][index1] = ideal_gas_data['PN'][index2]
+            sorted_tags['Rozmiar przyłącza'][index1] = ideal_gas_data['Rozmiar przyłącza'][index2]
+            sorted_tags['Rodzaj przyłącza'][index1] = ideal_gas_data['Rodzaj przyłącza'][index2]
+            sorted_tags['Materiał'][index1] = ideal_gas_data['Materiał'][index2]
+            sorted_tags['Uszczelnienie'][index1] = ideal_gas_data['Uszczelnienie'][index2]
+            sorted_tags['Uwagi'][index1] = ideal_gas_data['Uwagi'][index2]
+
+sorted_tags.to_excel('ponumerowane_' + filename_name + '_nowe.xlsx')
 
 input("Nacisnij Enter by wyjść.")
-
-

@@ -1,12 +1,12 @@
 import subprocess
 import sys
+import os
 
 
-def install(package):
-    subprocess.check_call([sys.executable, "-m", "pip", "install", package])
+def install():
+    here = os.path.abspath(os.path.dirname(__file__))
+    subprocess.check_call([sys.executable, "-m", "pip", "install", "-r", os.path.join(here, "requirements.txt")])
 
-install('pandas')
-install('regex')
-install('pathlib2')
-install('openpyxl')
-input('Sprawdź czy nie wystąpił błąd!')
+if __name__ == "__main__":
+    install()
+    input('Sprawdź czy nie wystąpił błąd!')
